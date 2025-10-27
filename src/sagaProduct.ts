@@ -1,5 +1,8 @@
 import { call, put, takeEvery } from "redux-saga/effects";
 import {
+  getProductListV1Pending,
+  getProductListV1Fulfilled,
+  getProductListV1Rejected,
   getProductListV2Pending,
   getProductListV2Fulfilled,
   getProductListV2Rejected,
@@ -12,7 +15,43 @@ import {
 } from "./redux/actionCreators";
 
 import { ACTION_TYPE } from "./redux/constants";
-import { productList, createProduct, deleteProduct } from "./api";
+import {
+  productList,
+  productListV1,
+  createProduct,
+  deleteProduct,
+} from "./api";
+
+function* getProductListV1Saga(action: any): Generator<any, void, any> {
+  try {
+    console.log("get product list v1 saga", action.payload);
+    yield put(getProductListV1Pending(action.payload));
+    console.log("get product list v1", action.payload);
+    console.log("response in sagas");
+    const response: any = yield call(productListV1, action.payload);
+    console.log("response in product list v1", response);
+    console.log("success in saga");
+    if (response && response.data) {
+      yield put(getProductListV1Fulfilled(response));
+    } else {
+      yield put(
+        getProductListV1Rejected(
+          "No product list v1 data available",
+          action.payload
+        )
+      );
+    }
+  } catch (error: any) {
+    console.error("Error in getProductListV1Saga:", error);
+    console.log("Dispatching rejected action with error:", error.message);
+    yield put(
+      getProductListV1Rejected(
+        error.message || "Failed to fetch product list v1 data",
+        action.payload
+      )
+    );
+  }
+}
 
 function* getProductListV2Saga(action: any): Generator<any, void, any> {
   try {
@@ -93,6 +132,7 @@ function* deleteProductSaga(action: any): Generator<any, void, any> {
 }
 
 export function* watcherProductSaga(): Generator<any, void, any> {
+  yield takeEvery(ACTION_TYPE.GET_PRODUCT_LIST_V1, getProductListV1Saga);
   yield takeEvery(ACTION_TYPE.GET_PRODUCT_LIST_V2, getProductListV2Saga);
   yield takeEvery(ACTION_TYPE.CREATE_PRODUCT, createProductSaga);
   yield takeEvery(ACTION_TYPE.DELETE_PRODUCT, deleteProductSaga);

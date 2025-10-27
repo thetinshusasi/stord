@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { productdataSelector, productdropdowndataSelector } from "./redux/selector";
+import { productdataSelector, productdropdowndataSelector, productdropdowndataV1Selector } from "./redux/selector";
 import { ChakraProvider } from "@chakra-ui/react";
-import { getPage, getProductListV2 } from "./redux/actionCreators";
+import { getPage, getProductListV2, getProductListV1 } from "./redux/actionCreators";
 import Moment from "moment";
 import {
   Button,
@@ -26,24 +26,28 @@ const App = () => {
   // const mainTableData = useSelector(productdataSelector);
   // const { quickFilterInput } = useSelector(productdataSelector);
 
-  // Use product v2 data instead
+  // Use both v1 and v2 data
+  const productV1Data = useSelector(productdropdowndataV1Selector);
   const productV2Data = useSelector(productdropdowndataSelector);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [showV1V2, setShowV1V2] = useState(false); // Toggle for bonus feature
 
-  // Comment out old data structure
-  // const dataTable = mainTableData?.data?.data;
-  // const total_pages = mainTableData?.data?.total_pages;
-  // const total = mainTableData?.data?.total;
-  // const loading = mainTableData?.loading;
-  // const error = mainTableData?.error;
+  // Combine v1 and v2 data for bonus feature
+  const v1Data = productV1Data?.data?.data || [];
+  const v2Data = productV2Data?.data?.data || [];
+  const combinedData = showV1V2 ? [...v1Data, ...v2Data] : v2Data;
 
-  // Use product v2 data structure
-  const dataTable = productV2Data?.data?.data;
-  const total_pages = productV2Data?.data?.total_pages;
-  const total = productV2Data?.data?.total;
-  const loading = productV2Data?.loading;
-  const error = productV2Data?.error;
+  // Use combined data structure
+  const dataTable = combinedData;
+  const total_pages = showV1V2
+    ? Math.max(productV1Data?.data?.total_pages || 0, productV2Data?.data?.total_pages || 0)
+    : productV2Data?.data?.total_pages;
+  const total = showV1V2
+    ? (productV1Data?.data?.total || 0) + (productV2Data?.data?.total || 0)
+    : productV2Data?.data?.total;
+  const loading = productV1Data?.loading || productV2Data?.loading;
+  const error = productV1Data?.error || productV2Data?.error;
 
   console.log("dataTable", dataTable);
   console.log("error state:", error);
@@ -65,32 +69,52 @@ const App = () => {
   const hasData = Array.isArray(data) && data.length > 0;
   const paginationText = loading ? LOADING_TEXT : `Page ${page} of ${total_pages} (${total} total items)`;
 
+  // Service-side search implementation (bonus feature)
   useEffect(() => {
-    setFilteredData(
-      dataTable?.filter((data: any) =>
-        data.sku.toLowerCase().includes(search.toLowerCase()) ||
-        (data.name && data.name.toLowerCase().includes(search.toLowerCase()))
-      )
-    );
-  }, [search, dataTable]);
+    if (search) {
+      // Query service for updated records
+      dispatch(
+        getProductListV2({
+          page: 1,
+          per_page: pageSize,
+          search: search
+        })
+      );
+    } else {
+      // Reset to normal data when search is cleared
+      setFilteredData(dataTable);
+    }
+  }, [search, dispatch, pageSize]);
+
+  // Client-side filtering for combined v1/v2 data
+  useEffect(() => {
+    if (!search) {
+      setFilteredData(dataTable);
+    }
+  }, [dataTable, search]);
 
   useEffect(() => {
     console.log("dispatch product v2", page, pageSize);
-    // Comment out old API dispatch
-    // dispatch(
-    //   getPage({
-    //     page: page
-    //   })
-    // );
 
-    // Use product v2 dispatch instead
+    // Fetch v2 data
     dispatch(
       getProductListV2({
         page: page,
-        per_page: pageSize
+        per_page: pageSize,
+        search: search || undefined
       })
     );
-  }, [page, pageSize]);
+
+    // Fetch v1 data for bonus feature
+    if (showV1V2) {
+      dispatch(
+        getProductListV1({
+          page: page,
+          per_page: pageSize
+        })
+      );
+    }
+  }, [page, pageSize, showV1V2, dispatch]);
 
   // Reset to page 1 when error occurs
   useEffect(() => {
@@ -104,9 +128,19 @@ const App = () => {
     dispatch(
       getProductListV2({
         page: page,
-        per_page: pageSize
+        per_page: pageSize,
+        search: search || undefined
       })
     );
+
+    if (showV1V2) {
+      dispatch(
+        getProductListV1({
+          page: page,
+          per_page: pageSize
+        })
+      );
+    }
   };
 
   const columns = [
@@ -207,6 +241,20 @@ const App = () => {
         </div>
         <div style={{ float: "right", marginTop: "-99px" }}>
           <AddProduct />
+        </div>
+        <div style={{ float: "right", marginTop: "-69px", marginRight: "120px" }}>
+          <Button
+            onClick={() => setShowV1V2(!showV1V2)}
+            style={{
+              backgroundColor: showV1V2 ? "green" : "gray",
+              color: "white",
+              fontSize: "12px",
+              padding: "5px 10px"
+            }}
+            size="sm"
+          >
+            {showV1V2 ? "V1+V2" : "V2 Only"}
+          </Button>
         </div>
         {!error && (
           <ButtonGroup

@@ -41,6 +41,9 @@ export const productList = (args: any) => {
   } else {
     queryParams.append("per_page", "10"); // Default page size
   }
+  if (args?.search) {
+    queryParams.append("search", args.search);
+  }
 
   const queryString = queryParams.toString();
   const url = queryString ? `/products?${queryString}` : "/products";
@@ -60,6 +63,48 @@ export const productList = (args: any) => {
     })
     .catch((error) => {
       console.error("API Error:", error);
+      throw error;
+    });
+};
+
+export const productListV1 = (args: any) => {
+  console.log("productListV1 args:", args);
+  const options = {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  };
+
+  // Build query string with pagination parameters
+  const queryParams = new URLSearchParams();
+  if (args?.page) {
+    queryParams.append("page", args.page.toString());
+  }
+  if (args?.per_page) {
+    queryParams.append("per_page", args.per_page.toString());
+  } else {
+    queryParams.append("per_page", "10"); // Default page size
+  }
+
+  const queryString = queryParams.toString();
+  const url = queryString ? `/v1/products?${queryString}` : "/v1/products";
+
+  return fetch(url, options)
+    .then((res) => {
+      console.log("V1 API Response status:", res.status);
+      if (!res.ok) {
+        console.log("V1 API Error - status not ok:", res.status);
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      return res.json();
+    })
+    .then((payload) => {
+      console.log("V1 API Success payload:", payload);
+      return payload;
+    })
+    .catch((error) => {
+      console.error("V1 API Error:", error);
       throw error;
     });
 };

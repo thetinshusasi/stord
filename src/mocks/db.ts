@@ -94,9 +94,27 @@ if (!hasLoadedFromStorage) {
 }
 
 export const handlers = [
-  rest.get("/v1/products?page=2", (req, res, ctx) => {
+  rest.get("/v1/products", (req, res, ctx) => {
+    // Force error for testing - change this back to 0.3 for normal behavior
+    if (Math.random() < 0.3) {
+      return res(
+        ctx.json({ message: "Oh no, there was a random server error" }),
+        ctx.status(500)
+      );
+    }
+
     const page = (req.url.searchParams.get("page") || 1) as number;
     const per_page = (req.url.searchParams.get("per_page") || 10) as number;
+
+    // Count only v1 products for accurate pagination
+    const v1ProductCount = db.product.count({
+      where: {
+        version: {
+          equals: 1,
+        },
+      },
+    });
+
     const data = db.product
       .findMany({
         take: per_page,
@@ -113,8 +131,8 @@ export const handlers = [
       ctx.json({
         data,
         page,
-        total_pages: Math.ceil(db.product.count() / per_page),
-        total: db.product.count(),
+        total_pages: Math.ceil(v1ProductCount / per_page),
+        total: v1ProductCount,
       }),
       ctx.delay(300)
     );
@@ -131,6 +149,7 @@ export const handlers = [
 
     const page = (req.url.searchParams.get("page") || 1) as number;
     const per_page = (req.url.searchParams.get("per_page") || 10) as number;
+    const search = req.url.searchParams.get("search") || "";
 
     // Count only v2 products for accurate pagination
     const v2ProductCount = db.product.count({
@@ -141,15 +160,44 @@ export const handlers = [
       },
     });
 
+    let whereClause: any = {
+      version: {
+        equals: 2,
+      },
+    };
+
+    // Add search filter if provided
+    if (search) {
+      whereClause = {
+        AND: [
+          {
+            version: {
+              equals: 2,
+            },
+          },
+          {
+            OR: [
+              {
+                sku: {
+                  contains: search,
+                },
+              },
+              {
+                name: {
+                  contains: search,
+                },
+              },
+            ],
+          },
+        ],
+      };
+    }
+
     const data = db.product
       .findMany({
         take: per_page,
         skip: Math.max(per_page * (page - 1), 0),
-        where: {
-          version: {
-            equals: 2,
-          },
-        },
+        where: whereClause,
       })
       .map(convertSnakeToCamelCaseRecursive);
 

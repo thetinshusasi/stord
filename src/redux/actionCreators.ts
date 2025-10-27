@@ -112,3 +112,31 @@ export const deleteProductRejected = (error: any, args: any) => ({
     args,
   },
 });
+
+export const getProductListV1 = ({ page = 1, per_page = 10 }: any) => ({
+  type: ACTION_TYPE.GET_PRODUCT_LIST_V1,
+  payload: {
+    page,
+    per_page,
+  },
+});
+
+export const getProductListV1Pending = (args: any) => ({
+  type: ACTION_TYPE.GET_PRODUCT_LIST_V1_PENDING,
+  payload: {
+    args,
+  },
+});
+
+export const getProductListV1Fulfilled = (result: any) => ({
+  type: ACTION_TYPE.GET_PRODUCT_LIST_V1_FULFILLED,
+  payload: result,
+});
+
+export const getProductListV1Rejected = (error: any, args: any) => ({
+  type: ACTION_TYPE.GET_PRODUCT_LIST_V1_REJECTED,
+  error,
+  meta: {
+    args,
+  },
+});
