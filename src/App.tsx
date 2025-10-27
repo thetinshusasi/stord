@@ -18,6 +18,7 @@ import { DataTable } from "./table";
 import "./styles.css";
 //import { columns } from "./redux/constants";
 import { AddProduct } from "./model";
+import { DeleteProductModal } from "./deleteModel";
 
 const App = () => {
   const dispatch = useDispatch();
@@ -50,6 +51,8 @@ const App = () => {
   const [search, setSearch] = useState("");
   const [data, setFilteredData] = useState([]);
   const [deleteData, setDeleteData] = useState(dataTable);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
   const next = () => (page < total_pages ? setPage(page + 1) : page);
   let previous = () => (page > 1 ? setPage(page - 1) : 1);
 
@@ -65,7 +68,8 @@ const App = () => {
   useEffect(() => {
     setFilteredData(
       dataTable?.filter((data: any) =>
-        data.sku.toLowerCase().includes(search.toLowerCase())
+        data.sku.toLowerCase().includes(search.toLowerCase()) ||
+        (data.name && data.name.toLowerCase().includes(search.toLowerCase()))
       )
     );
   }, [search, dataTable]);
@@ -107,22 +111,27 @@ const App = () => {
 
   const columns = [
     {
-      Header: "SKU and Name",
-      accessorKey: "sku",
-      id: "sku",
-      meta: {
-        style: {
-          color: "blue"
-        }
-      }
+      Header: "SKU & Name",
+      id: "skuAndName",
+      accessorFn: (d: any) => `${d.sku} - ${d.name}`,
+      cell: (tableProps: any) => (
+        <div>
+          <div style={{ fontWeight: "bold", color: "blue" }}>
+            {tableProps.row.original.sku}
+          </div>
+          <div style={{ fontSize: "0.9em", color: "gray" }}>
+            {tableProps.row.original.name}
+          </div>
+        </div>
+      )
     },
     {
-      Header: "Primary unit",
+      Header: "Primary Unit",
       accessorKey: "primaryUnit",
       id: "primaryUnit"
     },
     {
-      Header: "UPC code",
+      Header: "UPC Code",
       accessorKey: "upc",
       id: "upc"
     },
@@ -132,7 +141,7 @@ const App = () => {
       id: "description"
     },
     {
-      Header: "Last updated",
+      Header: "Last Updated",
       id: "lastUpdated",
       accessorFn: (d: any) => {
         return Moment(d.updatedAt).local().format("MM/DD/YYYY");
@@ -146,16 +155,13 @@ const App = () => {
         <span
           style={{
             cursor: "pointer",
-            color: "blue",
+            color: "red",
             textDecoration: "underline"
           }}
           onClick={() => {
             console.log("tableProps", tableProps.row);
-            // ES6 Syntax use the rvalue if your data is an array.
-            const dataCopy = [...deleteData];
-            // It should not matter what you name tableProps. It made the most sense to me.
-            dataCopy.splice(tableProps.row.index, 1);
-            setDeleteData(dataCopy);
+            setSelectedProduct(tableProps.row.original);
+            setDeleteModalOpen(true);
           }}
         >
           Delete
@@ -180,7 +186,7 @@ const App = () => {
               onChange={(e) => setSearch(e.target.value)}
               value={search}
               focusBorderColor="blue.400"
-              placeholder="Search product SKU"
+              placeholder="Search by SKU or name"
             />
           </InputGroup>
         </div>
@@ -257,6 +263,15 @@ const App = () => {
             {NO_PRODUCTS_TEXT}
           </div>
         )}
+
+        <DeleteProductModal
+          product={selectedProduct}
+          isOpen={deleteModalOpen}
+          onClose={() => {
+            setDeleteModalOpen(false);
+            setSelectedProduct(null);
+          }}
+        />
       </ChakraProvider>
     </div>
   );

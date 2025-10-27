@@ -68,6 +68,50 @@ export const viewDropdownData = (state = {}, action: any) => {
         error: action.error || "Failed to fetch product list v2",
       };
     }
+    case ACTION_TYPE.CREATE_PRODUCT_PENDING: {
+      return {
+        ...state,
+        createLoading: true,
+        createError: null,
+      };
+    }
+    case ACTION_TYPE.CREATE_PRODUCT_FULFILLED: {
+      return {
+        ...state,
+        createLoading: false,
+        createError: null,
+        createSuccess: true,
+      };
+    }
+    case ACTION_TYPE.CREATE_PRODUCT_REJECTED: {
+      return {
+        ...state,
+        createLoading: false,
+        createError: action.error || "Failed to create product",
+      };
+    }
+    case ACTION_TYPE.DELETE_PRODUCT_PENDING: {
+      return {
+        ...state,
+        deleteLoading: true,
+        deleteError: null,
+      };
+    }
+    case ACTION_TYPE.DELETE_PRODUCT_FULFILLED: {
+      return {
+        ...state,
+        deleteLoading: false,
+        deleteError: null,
+        deleteSuccess: true,
+      };
+    }
+    case ACTION_TYPE.DELETE_PRODUCT_REJECTED: {
+      return {
+        ...state,
+        deleteLoading: false,
+        deleteError: action.error || "Failed to delete product",
+      };
+    }
     default:
       return state;
   }

@@ -63,3 +63,60 @@ export const productList = (args: any) => {
       throw error;
     });
 };
+
+export const createProduct = (productData: any) => {
+  console.log("createProduct args:", productData);
+  const options = {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(productData),
+  };
+
+  return fetch("/products", options)
+    .then((res) => {
+      console.log("Create Product API Response status:", res.status);
+      if (!res.ok) {
+        console.log("Create Product API Error - status not ok:", res.status);
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      return res.json();
+    })
+    .then((payload) => {
+      console.log("Create Product API Success payload:", payload);
+      return payload;
+    })
+    .catch((error) => {
+      console.error("Create Product API Error:", error);
+      throw error;
+    });
+};
+
+export const deleteProduct = (productId: string) => {
+  console.log("deleteProduct args:", productId);
+  const options = {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  };
+
+  return fetch(`/products/${productId}`, options)
+    .then((res) => {
+      console.log("Delete Product API Response status:", res.status);
+      if (!res.ok) {
+        console.log("Delete Product API Error - status not ok:", res.status);
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      return res.json();
+    })
+    .then((payload) => {
+      console.log("Delete Product API Success payload:", payload);
+      return payload;
+    })
+    .catch((error) => {
+      console.error("Delete Product API Error:", error);
+      throw error;
+    });
+};

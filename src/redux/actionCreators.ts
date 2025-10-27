@@ -62,3 +62,53 @@ export const getProductListV2Rejected = (error: any, args: any) => ({
     args,
   },
 });
+
+export const createProductAction = (productData: any) => ({
+  type: ACTION_TYPE.CREATE_PRODUCT,
+  payload: productData,
+});
+
+export const createProductPending = (args: any) => ({
+  type: ACTION_TYPE.CREATE_PRODUCT_PENDING,
+  payload: {
+    args,
+  },
+});
+
+export const createProductFulfilled = (result: any) => ({
+  type: ACTION_TYPE.CREATE_PRODUCT_FULFILLED,
+  payload: result,
+});
+
+export const createProductRejected = (error: any, args: any) => ({
+  type: ACTION_TYPE.CREATE_PRODUCT_REJECTED,
+  error,
+  meta: {
+    args,
+  },
+});
+
+export const deleteProductAction = (productId: string) => ({
+  type: ACTION_TYPE.DELETE_PRODUCT,
+  payload: { productId },
+});
+
+export const deleteProductPending = (args: any) => ({
+  type: ACTION_TYPE.DELETE_PRODUCT_PENDING,
+  payload: {
+    args,
+  },
+});
+
+export const deleteProductFulfilled = (result: any) => ({
+  type: ACTION_TYPE.DELETE_PRODUCT_FULFILLED,
+  payload: result,
+});
+
+export const deleteProductRejected = (error: any, args: any) => ({
+  type: ACTION_TYPE.DELETE_PRODUCT_REJECTED,
+  error,
+  meta: {
+    args,
+  },
+});

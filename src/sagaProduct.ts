@@ -3,11 +3,16 @@ import {
   getProductListV2Pending,
   getProductListV2Fulfilled,
   getProductListV2Rejected,
-  sentProductListV2Response,
+  createProductPending,
+  createProductFulfilled,
+  createProductRejected,
+  deleteProductPending,
+  deleteProductFulfilled,
+  deleteProductRejected,
 } from "./redux/actionCreators";
 
 import { ACTION_TYPE } from "./redux/constants";
-import { productList } from "./api";
+import { productList, createProduct, deleteProduct } from "./api";
 
 function* getProductListV2Saga(action: any): Generator<any, void, any> {
   try {
@@ -39,6 +44,56 @@ function* getProductListV2Saga(action: any): Generator<any, void, any> {
     );
   }
 }
+function* createProductSaga(action: any): Generator<any, void, any> {
+  try {
+    console.log("create product saga", action.payload);
+    yield put(createProductPending(action.payload));
+    const response: any = yield call(createProduct, action.payload);
+    console.log("create product response", response);
+    if (response) {
+      yield put(createProductFulfilled(response));
+    } else {
+      yield put(
+        createProductRejected("Failed to create product", action.payload)
+      );
+    }
+  } catch (error: any) {
+    console.error("Error in createProductSaga:", error);
+    yield put(
+      createProductRejected(
+        error.message || "Failed to create product",
+        action.payload
+      )
+    );
+  }
+}
+
+function* deleteProductSaga(action: any): Generator<any, void, any> {
+  try {
+    console.log("delete product saga", action.payload);
+    yield put(deleteProductPending(action.payload));
+    const response: any = yield call(deleteProduct, action.payload.productId);
+    console.log("delete product response", response);
+    if (response) {
+      yield put(deleteProductFulfilled(response));
+    } else {
+      yield put(
+        deleteProductRejected("Failed to delete product", action.payload)
+      );
+    }
+  } catch (error: any) {
+    console.error("Error in deleteProductSaga:", error);
+    yield put(
+      deleteProductRejected(
+        error.message || "Failed to delete product",
+        action.payload
+      )
+    );
+  }
+}
+
 export function* watcherProductSaga(): Generator<any, void, any> {
   yield takeEvery(ACTION_TYPE.GET_PRODUCT_LIST_V2, getProductListV2Saga);
+  yield takeEvery(ACTION_TYPE.CREATE_PRODUCT, createProductSaga);
+  yield takeEvery(ACTION_TYPE.DELETE_PRODUCT, deleteProductSaga);
 }
