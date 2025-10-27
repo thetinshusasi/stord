@@ -17,8 +17,8 @@ const db = factory({
     status: String,
     version: Number,
     created_at: () => new Date().toString(),
-    updated_at: () => new Date().toString()
-  }
+    updated_at: () => new Date().toString(),
+  },
 });
 
 const types = ["Kit", "Order"];
@@ -29,11 +29,13 @@ const createProductData = (version: 1 | 2, index: number) => {
     id: faker.random.uuid(),
     type: faker.random.arrayElement(types),
     sku: `sku-${index}`,
+    name: faker.commerce.productName(),
+    upc: faker.random.alphaNumeric(12),
     description: faker.lorem.lines(1),
     primary_unit: "ea",
     version,
     created_at: date,
-    updated_at: date
+    updated_at: date,
   };
 };
 
@@ -54,9 +56,9 @@ export const handlers = [
         skip: Math.max(per_page * (page - 1), 0),
         where: {
           version: {
-            equals: 1
-          }
-        }
+            equals: 1,
+          },
+        },
       })
       .map(convertSnakeToCamelCaseRecursive);
 
@@ -65,14 +67,15 @@ export const handlers = [
         data,
         page,
         total_pages: Math.ceil(db.product.count() / per_page),
-        total: db.product.count()
+        total: db.product.count(),
       }),
       ctx.delay(300)
     );
   }),
 
   rest.get("/products", (req, res, ctx) => {
-    if (Math.random() < 0.3) {
+    // Force error for testing - change this back to 0.3 for normal behavior
+    if (Math.random() < 0.8) {
       return res(
         ctx.json({ message: "Oh no, there was a random server error" }),
         ctx.status(500)
@@ -81,22 +84,34 @@ export const handlers = [
 
     const page = (req.url.searchParams.get("page") || 1) as number;
     const per_page = (req.url.searchParams.get("per_page") || 10) as number;
-    const data = db.product.findMany({
-      take: per_page,
-      skip: Math.max(per_page * (page - 1), 0),
+
+    // Count only v2 products for accurate pagination
+    const v2ProductCount = db.product.count({
       where: {
         version: {
-          equals: 2
-        }
-      }
+          equals: 2,
+        },
+      },
     });
+
+    const data = db.product
+      .findMany({
+        take: per_page,
+        skip: Math.max(per_page * (page - 1), 0),
+        where: {
+          version: {
+            equals: 2,
+          },
+        },
+      })
+      .map(convertSnakeToCamelCaseRecursive);
 
     return res(
       ctx.json({
         data,
         page,
-        total_pages: Math.ceil(db.product.count() / per_page),
-        total: db.product.count()
+        total_pages: Math.ceil(v2ProductCount / per_page),
+        total: v2ProductCount,
       }),
       ctx.delay(300)
     );
@@ -127,5 +142,5 @@ export const handlers = [
       return res(ctx.json(db.product.create(req.body)));
     }
   ),
-  ...db.product.toHandlers("rest")
+  ...db.product.toHandlers("rest"),
 ] as const;

@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { sentDropdownResponse } from "./redux/actionCreators";
 import {
   Modal,
   ModalOverlay,
@@ -21,7 +20,7 @@ import { productdataSelector } from "./redux/selector";
 export const AddProduct = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
-  const handleSubmit = useCallback(() => {}, []);
+  const handleSubmit = useCallback(() => { }, []);
 
   return (
     <>
@@ -47,15 +46,15 @@ export const AddProduct = () => {
             <Text style={{ paddingTop: "10px", fontWeight: "bold" }} mb="8px">
               SKU
             </Text>
-            <Text mb="8px">{}</Text>
+            <Text mb="8px">{ }</Text>
             <Text style={{ paddingTop: "10px", fontWeight: "bold" }} mb="8px">
               Name
             </Text>
-            <Text mb="8px">{}</Text>
+            <Text mb="8px">{ }</Text>
             <Text style={{ paddingTop: "10px", fontWeight: "bold" }} mb="8px">
               Description
             </Text>
-            <Text mb="8px">{}</Text>
+            <Text mb="8px">{ }</Text>
           </ModalBody>
           <ModalFooter>
             <Button mr={3} onClick={onClose}>

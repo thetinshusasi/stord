@@ -3,54 +3,62 @@ console.log("action");
 export const getPage = ({ page }: any) => ({
   type: ACTION_TYPE.GET_MAIN_DATA,
   payload: {
-    page
-  }
+    page,
+  },
 });
 
 export const getDataPending = (args: any) => ({
   type: ACTION_TYPE.GET_MAIN_DATA_PENDING,
   payload: {
-    args
-  }
+    args,
+  },
 });
 
 export const getDataFulfilled = (result: any) => ({
   type: ACTION_TYPE.GET_MAIN_DATA_FULFILLED,
-  payload: result
+  payload: result,
 });
 
 export const getDataRejected = (error: any, args: any) => ({
   type: ACTION_TYPE.GET_MAIN_DATA_REJECTED,
   error,
   meta: {
-    args
-  }
+    args,
+  },
 });
 
-export const sentDropdownResponse = ({ sku, name, primaryUnit }: any) => ({
-  type: ACTION_TYPE.GET_DROPDOWN_DATA,
+export const sentProductListV2Response = ({ sku, name, primaryUnit }: any) => ({
+  type: ACTION_TYPE.GET_PRODUCT_LIST_V2,
   payload: {
     sku,
     name,
-    primaryUnit
-  }
+    primaryUnit,
+  },
 });
-export const getDropdownDataPending = (args: any) => ({
-  type: ACTION_TYPE.GET_DROPDOWN_DATA_PENDING,
+
+export const getProductListV2 = ({ page = 1, per_page = 10 }: any) => ({
+  type: ACTION_TYPE.GET_PRODUCT_LIST_V2,
   payload: {
-    args
-  }
+    page,
+    per_page,
+  },
+});
+export const getProductListV2Pending = (args: any) => ({
+  type: ACTION_TYPE.GET_PRODUCT_LIST_V2_PENDING,
+  payload: {
+    args,
+  },
 });
 
-export const getDropdownFulfilled = (result: any) => ({
-  type: ACTION_TYPE.GET_DROPDOWN_DATA_FULFILLED,
-  payload: result
+export const getProductListV2Fulfilled = (result: any) => ({
+  type: ACTION_TYPE.GET_PRODUCT_LIST_V2_FULFILLED,
+  payload: result,
 });
 
-export const getDropdownRejected = (error: any, args: any) => ({
-  type: ACTION_TYPE.GET_DROPDOWN_DATA_REJECTED,
+export const getProductListV2Rejected = (error: any, args: any) => ({
+  type: ACTION_TYPE.GET_PRODUCT_LIST_V2_REJECTED,
   error,
   meta: {
-    args
-  }
+    args,
+  },
 });

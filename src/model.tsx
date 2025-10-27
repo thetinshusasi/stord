@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { sentDropdownResponse } from "./redux/actionCreators";
+import { sentProductListV2Response } from "./redux/actionCreators";
 import {
   Modal,
   ModalOverlay,
@@ -42,7 +42,7 @@ export const AddProduct = () => {
   const handleSubmit = useCallback(() => {
     console.log("sku, name, primaryUnit", sku, name, primaryUnit);
     dispatch(
-      sentDropdownResponse({
+      sentProductListV2Response({
         sku: sku,
         name: name,
         primaryUnit: primaryUnit

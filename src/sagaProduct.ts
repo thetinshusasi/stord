@@ -1,27 +1,44 @@
 import { call, put, takeEvery } from "redux-saga/effects";
 import {
-  getDropdownDataPending,
-  getDropdownFulfilled,
-  getDropdownRejected,
-  sentDropdownResponse
+  getProductListV2Pending,
+  getProductListV2Fulfilled,
+  getProductListV2Rejected,
+  sentProductListV2Response,
 } from "./redux/actionCreators";
 
 import { ACTION_TYPE } from "./redux/constants";
 import { productList } from "./api";
 
-function* getDropdownDataSaga(action: any): Generator<any, void, any> {
+function* getProductListV2Saga(action: any): Generator<any, void, any> {
   try {
-    yield put(getDropdownDataPending(action.payload));
-    console.log("get dropdown", action.payload);
+    console.log("get product list v2 saga", action.payload);
+    yield put(getProductListV2Pending(action.payload));
+    console.log("get product list v2", action.payload);
     console.log("response in sagas");
     const response: any = yield call(productList, action.payload);
-    console.log("response in dropdown", response);
+    console.log("response in product list v2", response);
     console.log("success in saga");
-    //yield put(sentDropdownResponse(response));
-  } catch (error) {
-    yield put(getDropdownRejected(error, action.payload));
+    if (response && response.data) {
+      yield put(getProductListV2Fulfilled(response));
+    } else {
+      yield put(
+        getProductListV2Rejected(
+          "No product list v2 data available",
+          action.payload
+        )
+      );
+    }
+  } catch (error: any) {
+    console.error("Error in getProductListV2Saga:", error);
+    console.log("Dispatching rejected action with error:", error.message);
+    yield put(
+      getProductListV2Rejected(
+        error.message || "Failed to fetch product list v2 data",
+        action.payload
+      )
+    );
   }
 }
 export function* watcherProductSaga(): Generator<any, void, any> {
-  yield takeEvery(ACTION_TYPE.GET_DROPDOWN_DATA, getDropdownDataSaga);
+  yield takeEvery(ACTION_TYPE.GET_PRODUCT_LIST_V2, getProductListV2Saga);
 }
